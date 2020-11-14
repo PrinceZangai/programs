@@ -4,8 +4,9 @@ import pkuseg
 import numpy as np
 import jieba
 from jieba import posseg
+from matplotlib import pyplot as plt
 
-
+from wordcloud import WordCloud
 
 
 
@@ -36,10 +37,10 @@ def seg_accord_pos(sentence,pos):
     for pair in jieba.posseg.cut(sentence):
         if pair.flag in pos:
             sen_seg.append(pair.word)
-    return sen_seg
+    return ','.join(sen_seg)
 
 
-#计算词频
+#计算词频,text为arrayLike对象，每一个元素为一句评论分词后结果
 def word_freq(text):
     freq_dict={}
     for sentence in text:
@@ -48,6 +49,15 @@ def word_freq(text):
                 freq_dict[word]+=1
             else:
                 freq_dict[word]=1
+    return freq_dict
+
+def word_freq2(word_list):
+    freq_dict = {}
+    for word in word_list:
+        if word in freq_dict.keys():
+            freq_dict[word] += 1
+        else:
+            freq_dict[word] = 1
     return freq_dict
 
 #n-gram
@@ -71,20 +81,55 @@ def cut_word_to_file():#分词后保存为xlsx文件
     text_df = pd.read_csv(data_source_filename)
     punc = ['：', '[', ']', '。', '【', '】', '!', '(', ')', '.', '~', '「', '」', '——', '-', '…']
     text_df['review'] = text_df['review'].apply(lambda x: clearpunctuations(x, punc))
-    word_cut['jieba']=text_df['review'].apply(lambda x:[i for i in jieba.lcut(x) if i!=' 'and i!='，'])#去除空格和逗号
+    word_cut['jieba']=text_df['review'].apply(lambda x:','.join([i for i in jieba.lcut(x) if i!=' 'and i!='，']))#去除空格和逗号
     word_cut['jieba_pos']=text_df['review'].apply(lambda x:jieba.posseg.lcut(x))
-    word_cut['jieba_pos_n']=text_df['review'].apply(seg_accord_pos,args={'pos':['n','ns','m']})
-    word_cut['jieba_pos_nv']=text_df['review'].apply(seg_accord_pos,args={'pos':['n','ns']})
+    word_cut['jieba_pos_n']=text_df['review'].apply(seg_accord_pos,pos=['n','ns','nz','a','m','i','vn','nr'])
+    word_cut['jieba_pos_nv']=text_df['review'].apply(seg_accord_pos,pos=['n','ns','nz'])
     # word_cut['clear_single']=word_cut['jieba_pos'].apply(clear_single)
     word_cut.to_excel('word_cut_jieba.xlsx')
     return word_cut
-#n-gram
+
 #
 # all_word_freq=word_freq(word_cut['jieba'])
 # all_word_freq=pd.Series(all_word_freq,name='frequence').to_frame()
 # # all_word_freq.sort_values('frequence',inplace=True,ascending=False)
 # word_matrix=generate_word_matrix(word_cut['jieba'],all_word_freq)
 
-cut_word_to_file()
-# word_cut.to_excel('word_cut_jieba.xlsx')
-print()
+
+#生成词云图，查看效果
+def generate_wordcloud(word_frequence):
+
+    wc = WordCloud(background_color='white',
+                   max_words=200,
+                   # mask=bg, #Set the background of the picture
+                   max_font_size=200,
+                   width=1000,
+                   height=1000,
+                   random_state=60,
+                   font_path='C:/Windows/Fonts/simkai.ttf'
+                   )
+
+    wc.generate_from_frequencies(dict(word_frequence))
+    plt.imshow(wc)
+    plt.imshow(wc, interpolation="bilinear")
+    # 去掉云图坐标
+    plt.axis("off")
+    plt.show()
+
+
+def main():
+    text_df=pd.read_excel('word_cut_jieba.xlsx')
+    for attr in ['jieba','jieba_pos_n','jieba_pos_nv']:
+        word_list=[]
+        for sentence in text_df[attr]:
+            if isinstance(sentence,str):
+                sentence=sentence.split(',')
+                word_list.extend(sentence)
+        wordfreq=word_freq2(word_list)
+        wordfreq=pd.Series(wordfreq)
+        wordfreq.sort_values(ascending=False,inplace=True)
+        wordfreq=wordfreq[20:]
+        generate_wordcloud(wordfreq)
+    # cut_word_to_file()
+if __name__=='__main__':
+    main()
