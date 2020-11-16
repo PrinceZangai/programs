@@ -131,5 +131,6 @@ def main():
         wordfreq=wordfreq[20:]
         generate_wordcloud(wordfreq)
     # cut_word_to_file()
+
 if __name__=='__main__':
     main()
