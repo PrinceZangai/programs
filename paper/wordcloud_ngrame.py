@@ -62,15 +62,14 @@ def list_3_ngram(sentence,n=3,m=2):
     temp=[i for i in temp if len(set(i))>=m]
     return [item for item in temp if len(''.join(item).strip())>0]
 
-
 #过滤掉其他词汇，只保留关键词
 def key_words_filter(word_list,keywords_list):
     return [word for word in word_list if word in keywords_list]
             
-            
+
 if __name__=='__main__':
 
-    data_source_filename='shop_review.xlsx'
+    data_source_filename= 'source_data/shop_review.xlsx'
     # stopwords_filename='source_data/stop_words_small.txt'
     stopwords_filename='source_data/stop_words.txt'
     # keywords_filename='source_data/key_words.csv'

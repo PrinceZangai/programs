@@ -40,7 +40,7 @@ def list_to_frequence_dict(word_list):
     
 
 TOP_N=1000
-data_source_filename='shop_review.csv'
+data_source_filename= 'source_data/shop_review.csv'
 
 ############Step1:读取数据############
 text_df=pd.read_csv(data_source_filename)

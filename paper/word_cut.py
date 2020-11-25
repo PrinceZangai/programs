@@ -1,4 +1,5 @@
 import pandas as pd
+from gensim.corpora import Dictionary
 from pyhanlp import *
 import pkuseg
 import numpy as np
@@ -7,6 +8,9 @@ from jieba import posseg
 from matplotlib import pyplot as plt
 
 from wordcloud import WordCloud
+
+from gensim.models import Phrases
+from gensim.models import LdaModel
 
 
 
@@ -75,8 +79,8 @@ def clear_single(word_list):#去除单个词
     return new_word_list
 
 def cut_word_to_file():#分词后保存为xlsx文件
-    jieba.load_userdict('mydict.txt')
-    data_source_filename = 'shop_review.csv'
+    jieba.load_userdict('source_data/mydict.txt')
+    data_source_filename = 'source_data/shop_review.csv'
     word_cut = pd.DataFrame()
     text_df = pd.read_csv(data_source_filename)
     punc = ['：', '[', ']', '。', '【', '】', '!', '(', ')', '.', '~', '「', '」', '——', '-', '…']
@@ -97,7 +101,7 @@ def cut_word_to_file():#分词后保存为xlsx文件
 
 
 #生成词云图，查看效果
-def generate_wordcloud(word_frequence):
+def generate_wordcloud(word_frequence,picturefile):
 
     wc = WordCloud(background_color='white',
                    max_words=200,
@@ -110,27 +114,112 @@ def generate_wordcloud(word_frequence):
                    )
 
     wc.generate_from_frequencies(dict(word_frequence))
+    wc.to_file(picturefile)
     plt.imshow(wc)
     plt.imshow(wc, interpolation="bilinear")
     # 去掉云图坐标
     plt.axis("off")
     plt.show()
 
+def ldatrain(docs,num_topics):
+
+    dictionary = Dictionary(docs)
+    dictionary.filter_extremes(no_below=100, no_above=0.5)
+    corpus = [dictionary.doc2bow(doc) for doc in docs]
+    id2word = dictionary
+    chunksize = 2000
+    passes = 20
+    iterations = 1000
+    eval_every = None
+
+    topics_list={}
+    for i in range(4,num_topics):
+        model = LdaModel(
+            corpus=corpus,
+            id2word=id2word,
+            chunksize=chunksize,
+            alpha='auto',
+            eta='auto',
+            iterations=iterations,
+            num_topics=i,
+            passes=passes,
+            eval_every=eval_every
+        )
+        top_topics = model.top_topics(corpus)
+        print(top_topics)
+        topics_list[i]=top_topics
+        model.clear()
+
+    topicfile= pd.DataFrame(dict([(k, pd.Series(v)) for k, v in topics_list.items()]))
+
+    topicfile.to_excel('topicfile2.xlsx')
+
+
+def preprocess(texts):
+    # docs=[[token for token in doc if len(token>1)] for doc in docs]
+
+
+    with open('source_data/stop_words.txt',encoding='utf-8') as f:
+        stopwords=f.readlines()
+    stopwords=[stopword.strip() for stopword in stopwords]
+    wordfreq = word_freq(texts)
+    wordfreq=pd.Series(wordfreq)
+    wordfreq.sort_values(ascending=False,inplace=True)
+    exclude_word=wordfreq[:10].index  #去掉高频词
+    docs=[]
+    for doc in texts:
+        doc=[word for word in doc if word not in exclude_word and len(word)>1 and word not in stopwords]
+        docs.append(doc)
+    return docs
+
+
+    #2-gram
+    # bigram = Phrases(docs)
+    # for idx in range(len(docs)):
+    #     for token in bigram[docs[idx]]:
+    #         if '_' in token:
+    #             docs[idx].append(token)
+
+    # docs = [[token for token in doc if len(token) > 1] for doc in docs]
+
+
+
+    # for idx in range(len(docs)):
+    #     for token in bigram[docs[idx]]:
+
 
 def main():
+
+
+    # for attr in ['jieba','jieba_pos_n','jieba_pos_nv']:
+    #     word_list=[]
+    #     for sentence in text_df[attr]:
+    #         if isinstance(sentence,str):
+    #             sentence=sentence.split(',')
+    #             word_list.extend(sentence)
+    #     wordfreq=word_freq2(word_list)
+    #     wordfreq=pd.Series(wordfreq)
+    #     wordfreq.sort_values(ascending=False,inplace=True)
+    #     wordfreq=wordfreq[20:]
+    #     generate_wordcloud(wordfreq,'word_picture/'+attr+'.png')
+    #
+
     text_df=pd.read_excel('word_cut_jieba.xlsx')
-    for attr in ['jieba','jieba_pos_n','jieba_pos_nv']:
-        word_list=[]
-        for sentence in text_df[attr]:
-            if isinstance(sentence,str):
-                sentence=sentence.split(',')
-                word_list.extend(sentence)
-        wordfreq=word_freq2(word_list)
-        wordfreq=pd.Series(wordfreq)
-        wordfreq.sort_values(ascending=False,inplace=True)
-        wordfreq=wordfreq[20:]
-        generate_wordcloud(wordfreq)
+    docs = text_df['jieba_pos_nv'].to_list()
+    docs = [doc.split(',') for doc in docs if isinstance(doc, str)]
+
+    #词云图
+    # wordfreq = word_freq(docs)
+    # generate_wordcloud(wordfreq,'word_picture/words.png')
+
+    docs=preprocess(docs)
+    ldatrain(docs,20)
     # cut_word_to_file()
+
+
+
+
+
 
 if __name__=='__main__':
     main()
