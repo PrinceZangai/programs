@@ -39,18 +39,24 @@ def main():
         # 'http://www.dianping.com/shop/G66m005w8viJ1zPv',#漫舞时光·猫咖·羊驼咖(IFS店)
         # 'http://www.dianping.com/shop/irKop4LiLQFLFhUo',#常识咖啡PY COMMONSS(春熙路店)
         # 'http://www.dianping.com/shop/l24p2I7Rwa0RMviC',#JUST CHILL CAFE(瓦当瓦舍春熙路店)
-        'http://www.dianping.com/shop/l561Ag24FZjPjgRk',#Manner Coffee(IFS一楼店)
-        'http://www.dianping.com/shop/H2jGfGujB6IJpwEz',#esp.1917
-        'http://www.dianping.com/shop/jOdWJ2Idu41otSzo',#格度猫咪咖啡馆
-        'http://www.dianping.com/shop/H8cJl8laXpRUPbn1',#Coffee Store咖啡便利屋
-
+        # 'http://www.dianping.com/shop/l561Ag24FZjPjgRk',#Manner Coffee(IFS一楼店)
+        # 'http://www.dianping.com/shop/H2jGfGujB6IJpwEz',#esp.1917
+        # 'http://www.dianping.com/shop/jOdWJ2Idu41otSzo',#格度猫咪咖啡馆
+        # 'http://www.dianping.com/shop/H8cJl8laXpRUPbn1',#Coffee Store咖啡便利屋
+        'http://www.dianping.com/shop/k4FvoOu0AiRIYzfO',#星巴克太古里二店
+        'http://www.dianping.com/shop/l8vXCkRJrIBdMnqb',#星巴克臻选(太古里店)
+        'http://www.dianping.com/shop/G8xrvUHEu81bZDGE',#星巴克(宽窄巷子店)
+        'http://www.dianping.com/shop/k1c94fBHNypwfFi8',#<h4>星巴克(大悦城店)</h4>
+        'http://www.dianping.com/shop/H8BFCrvT5C5lVsfc',#<h4>星巴克臻选(成都万象城店)</h4>
+        'http://www.dianping.com/shop/k2XMfqZt4NQSd0Eo',#星巴克臻选(国际金融广场店)
+        'http://www.dianping.com/shop/l3AASrfx8WZ3Mdh2',#星巴克(锦里店)
         
     ]
 
-    with open('comment_821.json', 'r') as f:#评论
+    with open('dict_comment.json', 'r') as f:#评论
         dictionary1 = json.load(f)
 
-    with open('dictionary4.json','r') as f:#fansNum
+    with open('dic_number.json','r') as f:#fansNum
         dictionary2=json.load(f)
     # with  open('comment.json', 'r') as f:
     #     dictionary2 = json.load(f)
